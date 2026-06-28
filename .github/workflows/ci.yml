@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint, Format & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier format check
+        run: npm run format:check
+
+      - name: TypeScript type check
+        run: npm run typecheck
+
+  bundle-check:
+    name: Bundle Check (Android & iOS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Export Android bundle
+        run: npx expo export --platform android
+
+      - name: Export iOS bundle
+        run: npx expo export --platform ios
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run tests
+        run: npm test --if-present
+
+  commit-hygiene:
+    name: Commit Hygiene
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          git log --format="%s" origin/${{ github.base_ref }}..HEAD | while read msg; do
+            length=${#msg}
+            if [ "$length" -lt 10 ]; then
+              echo "ERROR: Commit message too short (<10 chars): '$msg'"
+              exit 1
+            fi
+            if [ "$length" -gt 72 ]; then
+              echo "WARN: Commit subject exceeds 72 chars ($length): '$msg'"
+            fi
+            echo "OK: $msg"
+          done

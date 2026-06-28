@@ -37,7 +37,9 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
-/android
 AGENTS.md
 CLAUDE.md
+.claude/
+
+# Icon source files (use assets/ for what's tracked)
+RidersBuddy_Icon_Pack/
