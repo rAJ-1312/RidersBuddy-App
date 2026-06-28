@@ -48,7 +48,7 @@ export default function SignIn() {
     >
       <View style={styles.inner}>
         <Text style={styles.logo}>RidersBuddy</Text>
-        <Text style={styles.tagline}>Ride. Connect. Explore.</Text>
+        <Text style={styles.tagline}>Ride. Connect. Explore. hehe.</Text>
 
         <TextInput
           style={styles.input}
